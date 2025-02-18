@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.4.0",
     "react-router-dom": "^7.1.5",
+    "react-window": "^1.8.11",
     "rebyb-redux": "^2.1.1"
   },
   "devDependencies": {
@@ -22,6 +24,7 @@
     "@tailwindcss/vite": "^4.0.6",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "eslint": "^9.19.0",
     "eslint-plugin-react-hooks": "^5.0.0",

@@ -5,7 +5,7 @@ export interface FileSchema {
   mimeType: string;
   name: string;
   size: number;
-  type: "file" | "folder";
+  type: "file";
 }
 export interface FileFolderSchema {
   fullPath: string;

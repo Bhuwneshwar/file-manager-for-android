@@ -66,9 +66,27 @@ const categories = {
     ".ppt",
     ".pptx",
     ".txt",
+    ".exe",
+    ".md",
   ],
-  archives: [".zip", ".rar", ".tar", ".gz", ".7z"],
-  code: [".js", ".ts", ".html", ".css", ".py", ".java", ".cpp", ".c"],
+  archives: [".zip", ".rar", ".tar", ".gz", ".7z", ".apk"],
+  code: [
+    ".js",
+    ".ts",
+    ".tsx",
+    ".jsx",
+    ".html",
+    ".css",
+    ".py",
+    ".java",
+    ".cpp",
+    ".c",
+    ".json",
+    ".scss",
+    ".xml",
+    ".ttf",
+    ".cjs",
+  ],
   others: [], // For files that don't match any category,
 
   // downloads: ["C:/Users/Krabi/Downloads"], //
@@ -213,6 +231,7 @@ app.post("/api/v1/upload-files", (req, res) => {
       }
       res.status(200).json({
         message: "Files uploaded successfully",
+        success: true,
         files: req.files,
       });
     });

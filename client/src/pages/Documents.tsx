@@ -4,7 +4,8 @@ import {
   formatSize,
   truncateText,
 } from "../components/FileManager";
-import { FaDownload, FaFileAlt } from "react-icons/fa";
+import { FaDownload } from "react-icons/fa";
+import { makeIcon } from "../utils/Utils";
 
 const Documents = () => {
   const {
@@ -22,7 +23,8 @@ const Documents = () => {
             key={index}
             className="flex items-center gap-4 p-2 border-b last:border-b-0"
           >
-            <FaFileAlt />
+            {/* <FaFileAlt fontSize={"1.5rem"} /> */}
+            {makeIcon(image)}
             <div className="flex-1">
               <p className="text-sm font-medium truncate">
                 {truncateText(image.name, 25)}
