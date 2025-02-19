@@ -3,25 +3,27 @@ import { config } from "dotenv";
 import path from "path";
 import fs from "fs";
 import { promises as fspro } from "fs";
-import util from "util";
+// import util from "util";
 import multer from "multer";
-import bodyParser from "body-parser";
-import crypto from "crypto";
+// import bodyParser from "body-parser";
+// import crypto from "crypto";
 import mime from "mime-types";
-import os from "os";
-import { exec } from "child_process";
+// import os from "os";
+// import { exec } from "child_process";
 import { sharedIpAddress } from "./getSharedIpAdd.js";
 // import second from '../client/dist'
 config();
 
-const readdirAsync = util.promisify(fs.readdir);
-const statAsync = util.promisify(fs.stat);
+// const readdirAsync = util.promisify(fs.readdir);
+// const statAsync = util.promisify(fs.stat);
 
 const app = express();
 
 app.use(express.json());
-const targetDirectory = "D:/C data"; // Change to any directory path
-const downloadPath = "D:\\C data\\downloads";
+const targetDirectory = process.env.ROOT_DIR || "D:\\"; // Change to any directory path
+const downloadPath = process.env.DOWNLOAD_DIR || "D:\\C data\\downloads";
+console.log({ targetDirectory });
+
 app.use(express.static(targetDirectory));
 
 // app.get("/", async (req, res) => {
@@ -29,20 +31,20 @@ app.use(express.static(targetDirectory));
 //   res.send("server down nahi");
 // });
 
-app.get("/api/v1/serve", (req, res) => {
-  try {
-    const filePath = req.query.filePath;
-    // console.log({ filePath });
+// app.get("/api/v1/serve", (req, res) => {
+//   try {
+//     const filePath = req.query.filePath;
+//     // console.log({ filePath });
 
-    if (!filePath) {
-      res.sendStatus(404);
-    }
-    res.sendFile(filePath);
-  } catch (error) {
-    console.log(error);
-    res.sendStatus(403);
-  }
-});
+//     if (!filePath) {
+//       res.sendStatus(404);
+//     }
+//     res.sendFile(filePath);
+//   } catch (error) {
+//     console.log(error);
+//     res.sendStatus(403);
+//   }
+// });
 
 // app.use("/api/v1/sdcard", express.static("/sdcard"));
 
@@ -131,62 +133,80 @@ const shouldIgnore = (filePath) => {
 
 // Function to recursively analyze files
 const analyzeFiles = (dir, results = {}) => {
-  if (shouldIgnore(dir)) return results; // Ignore directory
+  try {
+    if (shouldIgnore(dir)) return results; // Ignore directory
 
-  const files = fs.readdirSync(dir);
+    const files = fs.readdirSync(dir);
 
-  files.forEach((file) => {
-    const filePath = path.join(dir, file);
-    const stats = fs.statSync(filePath);
+    files.forEach((file) => {
+      try {
+        const filePath = path.join(dir, file);
 
-    if (shouldIgnore(filePath)) return; // Ignore file/folder
+        const stats = fs.statSync(filePath);
 
-    if (stats.isDirectory()) {
-      analyzeFiles(filePath, results);
-    } else {
-      const ext = path.extname(file);
-      const category = getCategory(ext);
+        if (shouldIgnore(filePath)) return; // Ignore file/folder
 
-      if (!results[category]) {
-        results[category] = [];
+        if (stats.isDirectory()) {
+          analyzeFiles(filePath, results);
+        } else {
+          const ext = path.extname(file);
+          const category = getCategory(ext);
+
+          if (!results[category]) {
+            results[category] = [];
+          }
+          if (!results["downloads"]) {
+            results["downloads"] = [];
+          }
+          // console.log({ filePath });
+
+          const relativePath = filePath.replace(targetDirectory, "");
+
+          const mimeType = mime.lookup(filePath) || "application/octet-stream";
+          const node = {
+            name: file,
+            type: "file",
+            mimeType: mimeType,
+            url: `${serverUrl}/${encodeURIComponent(relativePath)}`,
+            // url: `${serverUrl}/api/v1/serve?filePath=${encodeURIComponent(
+            //   filePath
+            // )}`,
+            fullPath: filePath,
+            size: stats.size,
+            // serverUrl: sharedIpAddress,
+            lastModified: stats.mtime,
+          };
+
+          results[category].push(node);
+
+          if (filePath.startsWith(downloadPath)) {
+            results["downloads"].push(node);
+          }
+        }
+      } catch (error) {
+        console.log(error);
       }
-      if (!results["downloads"]) {
-        results["downloads"] = [];
-      }
+    });
 
-      const mimeType = mime.lookup(filePath) || "application/octet-stream";
-      const node = {
-        name: file,
-        type: "file",
-        mimeType: mimeType,
-        url: `${serverUrl}/api/v1/serve?filePath=${encodeURIComponent(
-          filePath
-        )}`,
-        fullPath: filePath,
-        size: stats.size,
-        // serverUrl: sharedIpAddress,
-        lastModified: stats.mtime,
-      };
-
-      results[category].push(node);
-
-      if (filePath.startsWith(downloadPath)) {
-        results["downloads"].push(node);
-      }
-    }
-  });
-
-  return results;
+    return results;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // Set the directory to analyze (Change this path if needed)
 
 // Run the script
 app.get("/api/v1/analyze", (req, res) => {
-  const results = analyzeFiles(targetDirectory);
-  console.log("File analysis completed");
+  try {
+    const results = analyzeFiles(targetDirectory);
+    console.log("File analysis completed");
 
-  res.json(results);
+    res.json(results);
+  } catch (error) {
+    console.log(error);
+    res.send({ error: error.message });
+  }
 });
 
 // Set storage engine
@@ -252,10 +272,10 @@ app.get("/api/v1/read-dir", async (req, res) => {
 
     const items = [];
     for (const file of files) {
-      const currentPath = path.join(directory, file);
-      // console.log({ currentPath });
-
       try {
+        const currentPath = path.join(directory, file);
+        // console.log({ currentPath });
+
         const stat = fs.statSync(currentPath);
 
         let node;
@@ -266,6 +286,7 @@ app.get("/api/v1/read-dir", async (req, res) => {
             url: `${serverUrl}/api/v1/read-dir?dirPath=${encodeURIComponent(
               currentPath
             )}`,
+
             fullPath: currentPath,
             numberOfFiles: fs.readdirSync(currentPath).length,
             lastModified: stat.mtime,
@@ -273,14 +294,17 @@ app.get("/api/v1/read-dir", async (req, res) => {
         } else {
           const mimeType =
             mime.lookup(currentPath) || "application/octet-stream";
+          const relativePath = currentPath.replace(targetDirectory, "");
 
           node = {
             name: file,
             type: "file",
             mimeType: mimeType,
-            url: `${serverUrl}/api/v1/serve?filePath=${encodeURIComponent(
-              currentPath
-            )}`,
+            // url: `${serverUrl}/api/v1/serve?filePath=${encodeURIComponent(
+            //   currentPath
+            // )}`,
+            url: `${serverUrl}/${encodeURIComponent(relativePath)}`,
+
             fullPath: currentPath,
             size: stat.size,
             // serverUrl: sharedIpAddress,

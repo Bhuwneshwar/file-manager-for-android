@@ -17,18 +17,20 @@ export default function MusicPlayer() {
     store: { files },
   } = useGlobalContext();
 
-  const musicList: Song[] = files.audio.map((audio) => {
-    const arrByDot = audio.name.split(".");
-    const format = arrByDot[arrByDot.length - 1].toUpperCase();
+  const musicList: Song[] = files.audio
+    .map((audio) => {
+      const arrByDot = audio.name.split(".");
+      const format = arrByDot[arrByDot.length - 1].toUpperCase();
 
-    return {
-      id: audio.fullPath,
-      title: audio.name,
-      size: audio.size,
-      format,
-      src: audio.url,
-    };
-  });
+      return {
+        id: audio.fullPath,
+        title: audio.name,
+        size: audio.size,
+        format,
+        src: audio.url,
+      };
+    })
+    .sort((a, b) => a.title.localeCompare(b.title));
 
   const [playing, setPlaying] = useState<boolean>(false);
   const [currentSongIndex, setCurrentSongIndex] = useState<number>(0);
@@ -60,16 +62,16 @@ export default function MusicPlayer() {
             ? (audioRef.current.currentTime / audioRef.current.duration) * 100
             : 0) === 100
         ) {
-          changeSong(currentSongIndex - 1);
+          changeSong(currentSongIndex + 1);
         }
       };
     }
 
-    return () => {
-      if (audioRef.current) {
-        if (playing) audioRef.current.pause();
-      }
-    };
+    // return () => {
+    //   if (audioRef.current) {
+    //     if (playing) audioRef.current.pause();
+    //   }
+    // };
   }, [currentSongIndex]);
 
   const togglePlayPause = () => {
@@ -88,6 +90,10 @@ export default function MusicPlayer() {
       setCurrentSongIndex(index);
       setPlaying(true);
     }
+    if (index >= musicList.length || index < 0) {
+      setCurrentSongIndex(0);
+      setPlaying(true);
+    }
   };
 
   const formatTime = (timeInSeconds: number) => {
@@ -101,28 +107,7 @@ export default function MusicPlayer() {
       <h2 className="text-xl font-bold mb-4">My Music Files</h2>
 
       <div className="flex flex-col h-screen">
-        <div className="mb-4 h-full overflow-auto ">
-          {musicList.map((song, index) => (
-            <div
-              key={song.id}
-              className={`flex justify-between items-center p-2 rounded-lg cursor-pointer ${
-                currentSongIndex === index ? "bg-gray-700" : "hover:bg-gray-800"
-              }`}
-              onClick={() => changeSong(index)}
-            >
-              <div>
-                <p className="font-light">{truncateText(song.title, 35)}</p>
-                <p className="text-xs text-gray-400">
-                  {formatSize(song.size)} | {song.format}
-                </p>
-              </div>
-              <a href={song.src} target="_blank">
-                <FaDownload />
-              </a>
-            </div>
-          ))}
-        </div>
-        <div className="bg-gray-800  p-4 rounded-lg">
+        <div className="bg-gray-800  p-4 rounded-lg mb-4">
           <p className=" text-center mb-2">
             {truncateText(musicList[currentSongIndex].title, 35)}
           </p>
@@ -171,33 +156,28 @@ export default function MusicPlayer() {
           </div>
           <audio hidden ref={audioRef}></audio>
         </div>
+        <div className="mb-4 h-full overflow-auto ">
+          {musicList.map((song, index) => (
+            <div
+              key={song.id}
+              className={`flex justify-between items-center p-2 rounded-lg cursor-pointer ${
+                currentSongIndex === index ? "bg-gray-700" : "hover:bg-gray-800"
+              }`}
+              onClick={() => changeSong(index)}
+            >
+              <div>
+                <p className="font-light">{truncateText(song.title, 35)}</p>
+                <p className="text-xs text-gray-400">
+                  {formatSize(song.size)} | {song.format}
+                </p>
+              </div>
+              <a href={song.src} target="_blank">
+                <FaDownload />
+              </a>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
-
-// import { useGlobalContext } from "../MyRedux";
-// import { FaDownload } from "react-icons/fa";
-
-// const Audio = () => {
-//   const {
-//     store: { files },
-//   } = useGlobalContext();
-
-//   return (
-//     <div>
-//       {files.audio.map((audio) => {
-//         return (
-//           <>
-//             <audio controls src={audio.url} key={audio.fullPath} />;{audio.name}
-//             <a className=" bg-amber-400" href={audio.url} download>
-//               <FaDownload />
-//             </a>
-//           </>
-//         );
-//       })}
-//     </div>
-//   );
-// };
-
-// export default Audio;

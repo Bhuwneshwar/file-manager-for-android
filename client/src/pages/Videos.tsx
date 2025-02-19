@@ -12,6 +12,8 @@ const Videos = () => {
     store: { files },
   } = useGlobalContext();
 
+  const sortedBySize = files.videos.sort((a, b) => a.size - b.size);
+
   const videoItem = ({
     index,
     style,
@@ -21,27 +23,27 @@ const Videos = () => {
   }) => (
     <div style={style}>
       <a
-        href={files.videos[index].url}
+        href={sortedBySize[index].url}
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-4 p-2 border-b last:border-b-0 hover:bg-gray-50"
       >
         <video
-          src={files.videos[index].url}
-          // alt={files.videos[index].name}
+          src={sortedBySize[index].url}
+          // alt={sortedBySize[index].name}
           className="w-12 h-12 rounded-lg object-cover"
         />
         <div className="flex-1">
           <p className="text-sm font-medium truncate">
-            {truncateText(files.videos[index].name, 25)}
+            {truncateText(sortedBySize[index].name, 25)}
           </p>
           <p className="text-xs text-gray-500">
-            {formatSize(files.videos[index].size)},{" "}
-            {formatDate(files.videos[index].lastModified)}
+            {formatSize(sortedBySize[index].size)},{" "}
+            {formatDate(sortedBySize[index].lastModified)}
           </p>
         </div>
         <a
-          href={files.videos[index].url}
+          href={sortedBySize[index].url}
           target="_blank"
           rel="noopener noreferrer"
           download={true}

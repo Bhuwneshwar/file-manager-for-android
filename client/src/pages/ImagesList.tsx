@@ -13,46 +13,50 @@ const ImageList = () => {
     store: { files },
   } = useGlobalContext();
 
+  const sortedBySize = files.images.sort((a, b) => a.size - b.size);
+
   const imageItem = ({
     index,
     style,
   }: {
     index: number;
     style: React.CSSProperties;
-  }) => (
-    <div style={style}>
-      <a
-        href={files.images[index].url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-4 p-2 border-b last:border-b-0 hover:bg-gray-50"
-      >
-        <img
-          src={files.images[index].url}
-          alt={files.images[index].name}
-          className="w-12 h-12 rounded-lg object-cover"
-        />
-        <div className="flex-1">
-          <p className="text-sm font-medium truncate">
-            {truncateText(files.images[index].name, 25)}
-          </p>
-          <p className="text-xs text-gray-500">
-            {formatSize(files.images[index].size)},{" "}
-            {formatDate(files.images[index].lastModified)}
-          </p>
-        </div>
+  }) => {
+    return (
+      <div style={style}>
         <a
-          href={files.images[index].url}
+          href={sortedBySize[index].url}
           target="_blank"
           rel="noopener noreferrer"
-          download={true}
-          className="text-gray-500 hover:text-black"
+          className="flex items-center gap-4 p-2 border-b last:border-b-0 hover:bg-gray-50"
         >
-          <FaDownload />
+          <img
+            src={sortedBySize[index].url}
+            alt={sortedBySize[index].name}
+            className="w-12 h-12 rounded-lg object-cover"
+          />
+          <div className="flex-1">
+            <p className="text-sm font-medium truncate">
+              {truncateText(sortedBySize[index].name, 25)}
+            </p>
+            <p className="text-xs text-gray-500">
+              {formatSize(sortedBySize[index].size)},{" "}
+              {formatDate(sortedBySize[index].lastModified)}
+            </p>
+          </div>
+          <a
+            href={sortedBySize[index].url}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={true}
+            className="text-gray-500 hover:text-black"
+          >
+            <FaDownload />
+          </a>
         </a>
-      </a>
-    </div>
-  );
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-4">

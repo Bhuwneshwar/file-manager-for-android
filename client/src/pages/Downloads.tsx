@@ -7,6 +7,11 @@ const Downloads = () => {
     store: { files },
   } = useGlobalContext();
 
+  const sortByNew = files.downloads.sort(
+    (a, b) =>
+      new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+  );
+
   const Item = ({
     index,
     style,
@@ -14,7 +19,7 @@ const Downloads = () => {
     index: number;
     style: React.CSSProperties;
   }) => {
-    const file = files.downloads[index];
+    const file = sortByNew[index];
     return (
       <div style={style}>
         <FileItem file={file} />
